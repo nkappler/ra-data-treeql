@@ -53,7 +53,7 @@ That means that if you need to add custom headers to your requests, you just nee
 
 ```jsx
 import { fetchUtils, Admin, Resource } from 'react-admin';
-import jsonServerProvider from 'ra-data-json-server';
+import treeqlProvider from 'ra-data-treeql';
 
 const httpClient = (url, options = {}) => {
     if (!options.headers) {

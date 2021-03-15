@@ -10,7 +10,7 @@ import { fetchUtils, DataProvider } from 'ra-core';
  *
  * getList          => GET http://my.api.url/records/posts?order=title,ASC&page=1,25
  * getOne           => GET http://my.api.url/records/posts/123
- * getMany          => GET http://my.api.url/records/posts?id=123,456,789
+ * getMany          => GET http://my.api.url/records/posts?123,456,789
  * getManyReference => GET http://my.api.url/records/posts?filter=author_id,eq,345
  * update           => PUT http://my.api.url/records/posts/123
  * updateMany       => PUT http://my.api.url/records/posts/123,456,789

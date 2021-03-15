@@ -63,7 +63,7 @@ const httpClient = (url, options = {}) => {
     options.headers.set('X-Custom-Header', 'foobar');
     return fetchUtils.fetchJson(url, options);
 };
-const dataProvider = jsonServerProvider('http://jsonplaceholder.typicode.com', httpClient);
+const dataProvider = treeqlProvider('http://my.api.url/', httpClient);
 
 render(
     <Admin dataProvider={dataProvider} title="Example Admin">

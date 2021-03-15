@@ -37,7 +37,7 @@ import treeqlProvider from 'ra-data-treeql';
 import { PostList } from './posts';
 
 const App = () => (
-    <Admin dataProvider={jsonServerProvider('http://my.api.url/')}>
+    <Admin dataProvider={treeqlProvider('http://my.api.url/')}>
         <Resource name="posts" list={PostList} />
     </Admin>
 );

@@ -59,7 +59,11 @@ export default (apiUrl, httpClient = fetchUtils.fetchJson): DataProvider => ({
 
     getMany: (resource, params) => {
         const url = `${apiUrl}/records/${resource}/${params.ids.join(',')}`;
-        return httpClient(url).then(({ json }) => ({ data: json }));
+        if (params.ids.length === 1) {
+            return httpClient(url).then(({ json }) => ({ data: [json] })); // needs to be an array even if one id is passed
+        } else {
+            return httpClient(url).then(({ json }) => ({ data: json }));
+        }
     },
 
     // TODO: filter is not well-formed

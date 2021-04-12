@@ -48,20 +48,19 @@ const getDataProvider = (apiUrl: string, httpClient = fetchUtils.fetchJson): Dat
         const { json } = await httpClient(url);
         return ({
             data: json.records,
-            total: json.results ?? 0,
+            total: json.results,
         });
     },
 
     getOne: async (resource, params) => {
         const { json } = await httpClient(`${apiUrl}/records/${resource}/${params.id}`);
-        return ({
-            data: json,
-        });
+        return ({ data: json });
     },
 
     getMany: async (resource, params) => {
         const url = `${apiUrl}/records/${resource}/${params.ids.join(',')}`;
-        return httpClient(url).then(({ json }) => ({ data: Array.isArray(json) ? json : [json] }));
+        const { json } = await httpClient(url);
+        return ({ data: Array.isArray(json) ? json : [json] });
     },
 
     // TODO: filter is not well-formed
@@ -87,10 +86,11 @@ const getDataProvider = (apiUrl: string, httpClient = fetchUtils.fetchJson): Dat
         await httpClient(`${apiUrl}/records/${resource}/${params.id}`, {
             method: 'PUT',
             body: JSON.stringify(params.data),
-        }).then(({ json }) => ({ data: json }));
-        return httpClient(`${apiUrl}/records/${resource}/${params.id}`).then(({ json }) => ({
+        });
+        const { json } = await httpClient(`${apiUrl}/records/${resource}/${params.id}`);
+        return ({
             data: json,
-        }));
+        });
     },
 
     // TODO: updateMany is not returning the records
@@ -120,7 +120,6 @@ const getDataProvider = (apiUrl: string, httpClient = fetchUtils.fetchJson): Dat
         return ({ data: json });
     },
 
-    // TODO: deleteMany is not returning the ids
     deleteMany: async (resource, params) => {
         const { json } = await httpClient(`${apiUrl}/records/${resource}/${params.ids.join(',')}`, {
             method: 'DELETE',

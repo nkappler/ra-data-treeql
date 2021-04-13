@@ -1,5 +1,5 @@
 import { stringify } from 'query-string';
-import { fetchUtils, DataProvider } from 'ra-core';
+import { DataProvider, fetchUtils } from 'ra-core';
 
 /**
  * Maps react-admin queries to a TreeQL powered REST API
@@ -17,7 +17,7 @@ import { fetchUtils, DataProvider } from 'ra-core';
  * create           => POST http://my.api.url/records/posts/123
  * delete           => DELETE http://my.api.url/records/posts/123
  * deleteMany       => DELETE http://my.api.url/records/posts/123,456,789
- * 
+ *
  * @example
  *
  * import * as React from "react";
@@ -34,8 +34,8 @@ import { fetchUtils, DataProvider } from 'ra-core';
  *
  * export default App;
  */
-export default (apiUrl, httpClient = fetchUtils.fetchJson): DataProvider => ({
-    getList: (resource, params) => {
+const getDataProvider = (apiUrl: string, httpClient = fetchUtils.fetchJson): DataProvider => ({
+    getList: async (resource, params) => {
         const { page, perPage } = params.pagination;
         const { field, order } = params.sort;
         const query = {
@@ -45,29 +45,26 @@ export default (apiUrl, httpClient = fetchUtils.fetchJson): DataProvider => ({
         };
         const url = `${apiUrl}/records/${resource}?${stringify(query)}`;
 
-        return httpClient(url).then(({ json }) => ({
+        const { json } = await httpClient(url);
+        return ({
             data: json.records,
             total: json.results,
-        }));
+        });
     },
 
-    getOne: (resource, params) => {
-        return httpClient(`${apiUrl}/records/${resource}/${params.id}`).then(({ json }) => ({
-            data: json,
-        }));
+    getOne: async (resource, params) => {
+        const { json } = await httpClient(`${apiUrl}/records/${resource}/${params.id}`);
+        return ({ data: json });
     },
 
-    getMany: (resource, params) => {
+    getMany: async (resource, params) => {
         const url = `${apiUrl}/records/${resource}/${params.ids.join(',')}`;
-        if (params.ids.length === 1) {
-            return httpClient(url).then(({ json }) => ({ data: [json] })); // needs to be an array even if one id is passed
-        } else {
-            return httpClient(url).then(({ json }) => ({ data: json }));
-        }
+        const { json } = await httpClient(url);
+        return ({ data: Array.isArray(json) ? json : [json] });
     },
 
     // TODO: filter is not well-formed
-    getManyReference: (resource, params) => {
+    getManyReference: async (resource, params) => {
         const { page, perPage } = params.pagination;
         const { field, order } = params.sort;
         const query = {
@@ -77,48 +74,58 @@ export default (apiUrl, httpClient = fetchUtils.fetchJson): DataProvider => ({
         };
         const url = `${apiUrl}/records/${resource}?${stringify(query)}`;
 
-        return httpClient(url).then(({ json }) => ({
+        const { json } = await httpClient(url);
+        return ({
             data: json.records,
             total: json.results,
-        }));
+        });
     },
 
     // TODO: update is not returning the record
-    update: (resource, params) => {
-        return httpClient(`${apiUrl}/records/${resource}/${params.id}`, {
+    update: async (resource, params) => {
+        await httpClient(`${apiUrl}/records/${resource}/${params.id}`, {
             method: 'PUT',
             body: JSON.stringify(params.data),
-        }).then(({ json }) => ({ data: json }));
+        });
+        const { json } = await httpClient(`${apiUrl}/records/${resource}/${params.id}`);
+        return ({
+            data: json,
+        });
     },
 
     // TODO: updateMany is not returning the records
-    updateMany: (resource, params) => {
-        return httpClient(`${apiUrl}/records/${resource}/${params.ids.join(',')}`, {
+    updateMany: async (resource, params) => {
+        const { json } = await httpClient(`${apiUrl}/records/${resource}/${params.ids.join(',')}`, {
             method: 'PUT',
             body: JSON.stringify(params.data),
-        }).then(({ json }) => ({ data: json }));
+        });
+        return ({ data: json });
     },
 
-    create: (resource, params) => {
-        return httpClient(`${apiUrl}/records/${resource}`, {
+    create: async (resource, params) => {
+        const { json } = await httpClient(`${apiUrl}/records/${resource}`, {
             method: 'POST',
             body: JSON.stringify(params.data),
-        }).then(({ json }) => ({
+        });
+        return ({
             data: { ...params.data, id: json },
-        }));
+        });
     },
 
     // TODO: delete is not returning the id
-    delete: (resource, params) => {
-        return httpClient(`${apiUrl}/records/${resource}/${params.id}`, {
+    delete: async (resource, params) => {
+        const { json } = await httpClient(`${apiUrl}/records/${resource}/${params.id}`, {
             method: 'DELETE',
-        }).then(({ json }) => ({ data: json }));
+        });
+        return ({ data: json });
     },
 
-    // TODO: deleteMany is not returning the ids
-    deleteMany: (resource, params) => {
-        return httpClient(`${apiUrl}/records/${resource}/${params.ids.join(',')}`, {
+    deleteMany: async (resource, params) => {
+        const { json } = await httpClient(`${apiUrl}/records/${resource}/${params.ids.join(',')}`, {
             method: 'DELETE',
-        }).then(({ json }) => ({ data: json }));
+        });
+        return ({ data: Array.isArray(json) ? json : [json] });
     },
 });
+
+export default getDataProvider;

@@ -34,21 +34,44 @@ import { DataProvider, fetchUtils } from 'ra-core';
  *
  * export default App;
  */
+
+/**
+ * include this object in the query object
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const formatFilterOR = (filter: { [key: string]: any }): { [key: string]: string } => {
+    return Object.entries(filter)
+        .map(([key, value], index) => {
+            return { [`filter${index}`]: `${key},eq,${value}` };
+        })
+        .reduce((prev, current) => ({ ...prev, ...current }), {});
+};
+
+/**
+ * append the result directly to the request url
+ */
+const formatFilterAND = (filter: { [key: string]: any }): string => {
+    return Object.entries(filter)
+        .map(([key, value], _index) => {
+            return `filter=${key},eq,${value}`;
+        })
+        .join("&");
+};
+
 const getDataProvider = (apiUrl: string, httpClient = fetchUtils.fetchJson): DataProvider => ({
     getList: async (resource, params) => {
         const { page, perPage } = params.pagination;
         const { field, order } = params.sort;
         const query = {
-            ...fetchUtils.flattenObject(params.filter),
             order: `${field},${order}`,
-            page: `${page},${perPage}`,
+            page: `${page},${perPage}`
         };
-        const url = `${apiUrl}/records/${resource}?${stringify(query)}`;
+        const url = `${apiUrl}/records/${resource}?${stringify(query)}&${formatFilterAND(params.filter)}`;
 
         const { json } = await httpClient(url);
         return ({
             data: json.records,
-            total: json.results,
+            total: json.results ?? 0,
         });
     },
 
@@ -68,11 +91,10 @@ const getDataProvider = (apiUrl: string, httpClient = fetchUtils.fetchJson): Dat
         const { page, perPage } = params.pagination;
         const { field, order } = params.sort;
         const query = {
-            filter: fetchUtils.flattenObject(params.filter),
             order: `${field},${order}`,
             page: `${page},${perPage}`,
         };
-        const url = `${apiUrl}/records/${resource}?${stringify(query)}`;
+        const url = `${apiUrl}/records/${resource}?${stringify(query)}&${formatFilterAND(params.filter)}`;
 
         const { json } = await httpClient(url);
         return ({

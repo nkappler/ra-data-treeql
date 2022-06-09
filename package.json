@@ -16,7 +16,7 @@
     ],
     "repository": "nkappler/react-admin",
     "homepage": "https://github.com/nkappler/ra-data-treeql#readme",
-    "bugs": "https://github.com/marmelab/react-admin/issues",
+    "bugs": "https://github.com/nkappler/ra-data-treeql/issues",
     "license": "MIT",
     "scripts": {
         "build": "tsup src/index.ts --silent --clean --format cjs,esm --minify --keep-names --metafile --sourcemap --dts --legacy-output",

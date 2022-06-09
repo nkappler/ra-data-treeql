@@ -14,7 +14,7 @@
         "Maurits van der Schee",
         "Nikolaj Kappler"
     ],
-    "repository": "nkappler/react-admin",
+    "repository": "nkappler/ra-data-treeql",
     "homepage": "https://github.com/nkappler/ra-data-treeql#readme",
     "bugs": "https://github.com/nkappler/ra-data-treeql/issues",
     "license": "MIT",

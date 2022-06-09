@@ -1,12 +1,30 @@
 {
-    "extends": "../../tsconfig.json",
     "compilerOptions": {
-        "outDir": "lib",
-        "rootDir": "src",
+        "target": "ES5",
+        "module": "commonjs",
+        "lib": [
+            "es2017",
+            "dom"
+        ],
+        "allowJs": false,
+        "jsx": "react",
         "declaration": true,
         "declarationMap": true,
-        "allowJs": false
+        "outDir": "lib",
+        "rootDir": "src",
+        "noImplicitAny": false,
+        "noFallthroughCasesInSwitch": true,
+        "moduleResolution": "node",
+        "allowSyntheticDefaultImports": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
     },
-    "exclude": ["**/*.spec.ts", "**/*.spec.tsx", "**/*.spec.js"],
-    "include": ["src"]
+    "exclude": [
+        "**/*.spec.ts",
+        "**/*.spec.tsx",
+        "**/*.spec.js"
+    ],
+    "include": [
+        "src"
+    ]
 }

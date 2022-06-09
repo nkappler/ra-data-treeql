@@ -2,37 +2,32 @@
     "name": "ra-data-treeql",
     "version": "0.9.1",
     "description": "TreeQL data provider for react-admin",
-    "main": "lib/index.js",
-    "module": "esm/index.js",
+    "main": "dist/index.js",
+    "module": "dist/esm/index.js",
     "sideEffects": false,
     "files": [
         "*.md",
-        "lib",
-        "esm",
-        "src"
+        "dist"
     ],
     "authors": [
         "François Zaninotto",
-        "Maurits van der Schee"
+        "Maurits van der Schee",
+        "Nikolaj Kappler"
     ],
-    "repository": "marmelab/react-admin",
-    "homepage": "https://github.com/marmelab/react-admin#readme",
+    "repository": "nkappler/react-admin",
+    "homepage": "https://github.com/nkappler/ra-data-treeql#readme",
     "bugs": "https://github.com/marmelab/react-admin/issues",
     "license": "MIT",
     "scripts": {
-        "build": "yarn run build-cjs && yarn run build-esm",
-        "build-cjs": "rimraf ./lib && tsc",
-        "build-esm": "rimraf ./esm && tsc --outDir esm --module es2015",
-        "watch": "tsc --outDir esm --module es2015 --watch"
+        "build": "tsup src/index.ts --silent --clean --format cjs,esm --minify --keep-names --metafile --sourcemap --dts --legacy-output",
+        "watch": "tsup src/index.ts --silent --clean --format cjs,esm --minify --keep-names --metafile --sourcemap --dts --legacy-output --watch"
     },
     "dependencies": {
         "query-string": "^5.1.1",
-        "ra-core": "^3.13.4",
-        "rimraf": "^3.0.2",
-        "tsc": "^1.20150623.0"
+        "ra-core": "^3.13.4"
     },
     "devDependencies": {
-        "cross-env": "^5.2.0",
-        "rimraf": "^2.6.3"
+        "tsup": "^6.1.0",
+        "typescript": "^4.7.3"
     }
 }

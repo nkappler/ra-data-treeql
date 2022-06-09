@@ -86,7 +86,6 @@ const getDataProvider = (apiUrl: string, httpClient = fetchUtils.fetchJson): Dat
         return ({ data: Array.isArray(json) ? json : [json] });
     },
 
-    // TODO: filter is not well-formed
     getManyReference: async (resource, params) => {
         const { page, perPage } = params.pagination;
         const { field, order } = params.sort;

@@ -28,7 +28,7 @@
     },
     "devDependencies": {
         "@swc/core": "^1.2.197",
-        "tsup": "^6.1.0",
+        "tsup": "^6.1.2",
         "typescript": "^4.7.3"
     }
 }

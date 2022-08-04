@@ -24,16 +24,27 @@ describe("getDataProvider", () => {
 describe("formatFilter", () => {
     it("default", () => expect(formatFilter({ comment: 4 })).toEqual("comment,eq,4"));
     it("contains", () => expect(formatFilter({ comment_cs: 4 })).toEqual("comment,cs,4"));
+    it("not contains", () => expect(formatFilter({ comment_ncs: 4 })).toEqual("comment,ncs,4"));
     it("start with", () => expect(formatFilter({ comment_sw: 4 })).toEqual("comment,sw,4"));
+    it("start not with", () => expect(formatFilter({ comment_nsw: 4 })).toEqual("comment,nsw,4"));
     it("end with", () => expect(formatFilter({ comment_ew: 4 })).toEqual("comment,ew,4"));
+    it("end not with", () => expect(formatFilter({ comment_new: 4 })).toEqual("comment,new,4"));
     it("lower than", () => expect(formatFilter({ comment_lt: 4 })).toEqual("comment,lt,4"));
+    it("not lower than", () => expect(formatFilter({ comment_nlt: 4 })).toEqual("comment,nlt,4"));
     it("lower or equal", () => expect(formatFilter({ comment_le: 4 })).toEqual("comment,le,4"));
+    it("not lower or equal", () => expect(formatFilter({ comment_nle: 4 })).toEqual("comment,nle,4"));
     it("greater or equal", () => expect(formatFilter({ comment_ge: 4 })).toEqual("comment,ge,4"));
+    it("not greater or equal", () => expect(formatFilter({ comment_nge: 4 })).toEqual("comment,nge,4"));
     it("greater than", () => expect(formatFilter({ comment_gt: 4 })).toEqual("comment,gt,4"));
+    it("not greater than", () => expect(formatFilter({ comment_ngt: 4 })).toEqual("comment,ngt,4"));
     it("between", () => expect(formatFilter({ comment_bt: [4, 8] })).toEqual("comment,bt,4,8"));
+    it("not between", () => expect(formatFilter({ comment_nbt: [4, 8] })).toEqual("comment,nbt,4,8"));
     it("in", () => expect(formatFilter({ comment_in: [4, 8, 16, 32] })).toEqual("comment,in,4,8,16,32"));
+    it("not in", () => expect(formatFilter({ comment_nin: [4, 8, 16, 32] })).toEqual("comment,nin,4,8,16,32"));
     it("is null", () => expect(formatFilter({ comment_is: 4 })).toEqual("comment,is"));
+    it("is not null", () => expect(formatFilter({ comment_nis: 4 })).toEqual("comment,nis"));
     it("unsupported operator", () => expect(formatFilter({ comment_xy: 4 })).toEqual("comment_xy,eq,4"));
+    it("unsupported negated operator", () => expect(formatFilter({ comment_nxy: 4 })).toEqual("comment_nxy,eq,4"));
     it("type errors", () => {
         try {
             formatFilter({ comment_bt: 4 });
@@ -73,12 +84,12 @@ describe("dataProvider API", () => {
 
     it("create", async () => {
         mock.mockImplementationOnce(() => ({ json: 1 }));
-        const result = await dataProvider.create("comment", { data: { id: 1, title: "myComment", content: "This is a test comment" } });
+        // id shouldn't be required as it is usually generated on the server
+        const result = await dataProvider.create("comment", { data: { title: "myComment", content: "This is a test comment" } });
 
         expect(mock).lastCalledWith(
             "http://myApi.com/records/comment",
             {
-                // id shouldn't be required as it is usually generated on the server
                 body: JSON.stringify({ title: "myComment", "content": "This is a test comment" }),
                 method: "POST"
             }

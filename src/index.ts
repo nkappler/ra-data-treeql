@@ -71,6 +71,11 @@ export const formatFilter = (filter: Record<string, any>): string => {
                 operator = suffix;
                 return [key.slice(0, -3), operator, formatFilterArguments(operator, value)].filter(v => !!v).join(",");
             }
+            if (key.slice(-4, -2) === "_n" && isValidFilterOperator(suffix)) {
+                // negated operators
+                operator = suffix;
+                return [key.slice(0, -4), "n" + operator, formatFilterArguments(operator, value)].filter(v => !!v).join(",");
+            }
 
             return `${key},eq,${value}`;
         })

@@ -78,7 +78,8 @@ describe("dataProvider API", () => {
         expect(mock).lastCalledWith(
             "http://myApi.com/records/comment",
             {
-                body: JSON.stringify({ id: 1, title: "myComment", "content": "This is a test comment" }),
+                // id shouldn't be required as it is usually generated on the server
+                body: JSON.stringify({ title: "myComment", "content": "This is a test comment" }),
                 method: "POST"
             }
         );

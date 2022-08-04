@@ -20,14 +20,19 @@
     "license": "MIT",
     "scripts": {
         "build": "tsup src/index.ts --silent --clean --format cjs,esm --minify --keep-names --metafile --sourcemap --dts --legacy-output --target es5",
-        "watch": "tsup src/index.ts --silent --clean --format cjs,esm --minify --keep-names --metafile --sourcemap --dts --legacy-output --target es5 --watch"
+        "watch": "tsup src/index.ts --silent --clean --format cjs,esm --minify --keep-names --metafile --sourcemap --dts --legacy-output --target es5 --watch",
+        "test": "jest src/index.test.ts --coverage",
+        "test:watch": "jest src/index.test.ts --watch --coverage"
     },
     "dependencies": {
-        "query-string": "^7.1.1",
         "ra-core": "^4.1.2"
     },
     "devDependencies": {
         "@swc/core": "^1.2.197",
+        "@types/jest": "^28.1.6",
+        "jest": "^28.1.3",
+        "react-admin": "^4.2.5",
+        "ts-jest": "^28.0.7",
         "tsup": "^6.1.2",
         "typescript": "^4.7.3"
     }

@@ -1,15 +1,14 @@
-import getDataProvider, { formatFilter, TreeQLDataProvider } from ".";
-
+import getDataProvider, { formatParams, TreeQLDataProvider } from ".";
 
 class TestDataProvider extends TreeQLDataProvider {
-    public getURL(resource: string, params?: Record<string, string>): string {
-        return super.getURL(resource, params);
-    }
+    public getURL = super.getURL;
 }
 
 const mockHTTP = {
     fetch: (_url: string, _options?) => Promise.resolve({ status: 200, headers: null as any, body: null, json: null })
 };
+
+const formatFilter = (filter: Record<string, any>) => formatParams({ filter } as any);
 
 const dataProvider = new TestDataProvider("http://myApi.com/", (url, options) => mockHTTP.fetch(url, options));
 
@@ -22,29 +21,30 @@ describe("getDataProvider", () => {
 });
 
 describe("formatFilter", () => {
-    it("default", () => expect(formatFilter({ comment: 4 })).toEqual("comment,eq,4"));
-    it("contains", () => expect(formatFilter({ comment_cs: 4 })).toEqual("comment,cs,4"));
-    it("not contains", () => expect(formatFilter({ comment_ncs: 4 })).toEqual("comment,ncs,4"));
-    it("start with", () => expect(formatFilter({ comment_sw: 4 })).toEqual("comment,sw,4"));
-    it("start not with", () => expect(formatFilter({ comment_nsw: 4 })).toEqual("comment,nsw,4"));
-    it("end with", () => expect(formatFilter({ comment_ew: 4 })).toEqual("comment,ew,4"));
-    it("end not with", () => expect(formatFilter({ comment_new: 4 })).toEqual("comment,new,4"));
-    it("lower than", () => expect(formatFilter({ comment_lt: 4 })).toEqual("comment,lt,4"));
-    it("not lower than", () => expect(formatFilter({ comment_nlt: 4 })).toEqual("comment,nlt,4"));
-    it("lower or equal", () => expect(formatFilter({ comment_le: 4 })).toEqual("comment,le,4"));
-    it("not lower or equal", () => expect(formatFilter({ comment_nle: 4 })).toEqual("comment,nle,4"));
-    it("greater or equal", () => expect(formatFilter({ comment_ge: 4 })).toEqual("comment,ge,4"));
-    it("not greater or equal", () => expect(formatFilter({ comment_nge: 4 })).toEqual("comment,nge,4"));
-    it("greater than", () => expect(formatFilter({ comment_gt: 4 })).toEqual("comment,gt,4"));
-    it("not greater than", () => expect(formatFilter({ comment_ngt: 4 })).toEqual("comment,ngt,4"));
-    it("between", () => expect(formatFilter({ comment_bt: [4, 8] })).toEqual("comment,bt,4,8"));
-    it("not between", () => expect(formatFilter({ comment_nbt: [4, 8] })).toEqual("comment,nbt,4,8"));
-    it("in", () => expect(formatFilter({ comment_in: [4, 8, 16, 32] })).toEqual("comment,in,4,8,16,32"));
-    it("not in", () => expect(formatFilter({ comment_nin: [4, 8, 16, 32] })).toEqual("comment,nin,4,8,16,32"));
-    it("is null", () => expect(formatFilter({ comment_is: 4 })).toEqual("comment,is"));
-    it("is not null", () => expect(formatFilter({ comment_nis: 4 })).toEqual("comment,nis"));
-    it("unsupported operator", () => expect(formatFilter({ comment_xy: 4 })).toEqual("comment_xy,eq,4"));
-    it("unsupported negated operator", () => expect(formatFilter({ comment_nxy: 4 })).toEqual("comment_nxy,eq,4"));
+    it("search param", () => expect(formatFilter({ q: "Hello", title: "World" })).toEqual("?search=Hello&filter=title,eq,World"));
+    it("default", () => expect(formatFilter({ comment: 4 })).toEqual("?filter=comment,eq,4"));
+    it("contains", () => expect(formatFilter({ comment_cs: 4 })).toEqual("?filter=comment,cs,4"));
+    it("not contains", () => expect(formatFilter({ comment_ncs: 4 })).toEqual("?filter=comment,ncs,4"));
+    it("start with", () => expect(formatFilter({ comment_sw: 4 })).toEqual("?filter=comment,sw,4"));
+    it("start not with", () => expect(formatFilter({ comment_nsw: 4 })).toEqual("?filter=comment,nsw,4"));
+    it("end with", () => expect(formatFilter({ comment_ew: 4 })).toEqual("?filter=comment,ew,4"));
+    it("end not with", () => expect(formatFilter({ comment_new: 4 })).toEqual("?filter=comment,new,4"));
+    it("lower than", () => expect(formatFilter({ comment_lt: 4 })).toEqual("?filter=comment,lt,4"));
+    it("not lower than", () => expect(formatFilter({ comment_nlt: 4 })).toEqual("?filter=comment,nlt,4"));
+    it("lower or equal", () => expect(formatFilter({ comment_le: 4 })).toEqual("?filter=comment,le,4"));
+    it("not lower or equal", () => expect(formatFilter({ comment_nle: 4 })).toEqual("?filter=comment,nle,4"));
+    it("greater or equal", () => expect(formatFilter({ comment_ge: 4 })).toEqual("?filter=comment,ge,4"));
+    it("not greater or equal", () => expect(formatFilter({ comment_nge: 4 })).toEqual("?filter=comment,nge,4"));
+    it("greater than", () => expect(formatFilter({ comment_gt: 4 })).toEqual("?filter=comment,gt,4"));
+    it("not greater than", () => expect(formatFilter({ comment_ngt: 4 })).toEqual("?filter=comment,ngt,4"));
+    it("between", () => expect(formatFilter({ comment_bt: [4, 8] })).toEqual("?filter=comment,bt,4,8"));
+    it("not between", () => expect(formatFilter({ comment_nbt: [4, 8] })).toEqual("?filter=comment,nbt,4,8"));
+    it("in", () => expect(formatFilter({ comment_in: [4, 8, 16, 32] })).toEqual("?filter=comment,in,4,8,16,32"));
+    it("not in", () => expect(formatFilter({ comment_nin: [4, 8, 16, 32] })).toEqual("?filter=comment,nin,4,8,16,32"));
+    it("is null", () => expect(formatFilter({ comment_is: 4 })).toEqual("?filter=comment,is"));
+    it("is not null", () => expect(formatFilter({ comment_nis: 4 })).toEqual("?filter=comment,nis"));
+    it("unsupported operator", () => expect(formatFilter({ comment_xy: 4 })).toEqual("?filter=comment_xy,eq,4"));
+    it("unsupported negated operator", () => expect(formatFilter({ comment_nxy: 4 })).toEqual("?filter=comment_nxy,eq,4"));
     it("type errors", () => {
         try {
             formatFilter({ comment_bt: 4 });
@@ -63,14 +63,14 @@ describe("formatFilter", () => {
         }
     });
     it("ignore additional arguments", () => {
-        expect(formatFilter({ comment_bt: [4, 8, 16, 32] })).toEqual("comment,bt,4,8");
-        expect(formatFilter({ comment_is: 4 })).toEqual("comment,is");
+        expect(formatFilter({ comment_bt: [4, 8, 16, 32] })).toEqual("?filter=comment,bt,4,8");
+        expect(formatFilter({ comment_is: 4 })).toEqual("?filter=comment,is");
     });
 });
 
 describe("getURL", () => {
     it("params should be encoded correctly", () => {
-        const params = { order: "length,DESC", page: "1,25", filter: formatFilter({ id: 4 }) };
+        const params = { order: "length,DESC", page: "1,25", filter: { id: 4 } };
         expect(dataProvider.getURL("comment", params)).toEqual("http://myApi.com/records/comment?order=length,DESC&page=1,25&filter=id,eq,4");
     });
 });

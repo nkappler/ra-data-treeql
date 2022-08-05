@@ -59,28 +59,49 @@ import {
  * export default App;
  */
 
-/**
- * append the result directly to the request url
- */
-export const formatFilter = (filter: Record<string, any>): string => {
-    return Object.entries(filter)
-        .map(([key, value], _index) => {
-            let operator: FilterOperator = "eq";
-            const suffix = key.slice(-2);
-            if (key.slice(-3, -2) === "_" && isValidFilterOperator(suffix)) {
-                operator = suffix;
-                return [key.slice(0, -3), operator, formatFilterArguments(operator, value)].filter(v => !!v).join(",");
-            }
-            if (key.slice(-4, -2) === "_n" && isValidFilterOperator(suffix)) {
-                // negated operators
-                operator = suffix;
-                return [key.slice(0, -4), "n" + operator, formatFilterArguments(operator, value)].filter(v => !!v).join(",");
-            }
+/** see https://github.com/mevdschee/php-crud-api#filters */
+const filterOperators = [
+    "cs", // contain string (string contains value)
+    "sw", // start with (string starts with value)
+    "ew", // end with (string end with value)
+    "eq", // equal (string or number matches exactly)
+    "lt", // lower than (number is lower than value)
+    "le", // lower or equal (number is lower than or equal to value)
+    "ge", // greater or equal (number is higher than or equal to value)
+    "gt", // greater than (number is higher than value)
+    "bt", // between (number is between two comma separated values)
+    "in", // in (number or string is in comma separated list of values)
+    "is", // is null (field contains "NULL" value)
+] as const;
 
-            return `${key},eq,${value}`;
-        })
-        .join("&filter=");
-};
+/** see https://marmelab.com/react-admin/FilteringTutorial.html#filter-operators */
+const searchOperator = "q" as const; // default search operator of react-admin
+const APISearchParam = "search" as const; // default search param of TreeQL
+const APIFilterParam = "filter" as const; // filter param of TreeQL
+
+type FilterOperator = typeof filterOperators[number];
+
+const isValidFilterOperator = (value: any): value is FilterOperator => filterOperators.includes(value);
+
+const formatFilter = (filter: Record<string, any>): [string, string][] => Object.entries(filter).map(([key, value]) => {
+    if (key === searchOperator) {
+        return [APISearchParam, value];
+    }
+
+    let operator: FilterOperator = "eq";
+    const suffix = key.slice(-2);
+    if (key.slice(-3, -2) === "_" && isValidFilterOperator(suffix)) {
+        operator = suffix;
+        return [APIFilterParam, [key.slice(0, -3), operator, formatFilterArguments(operator, value)].filter(v => !!v).join(",")];
+    }
+    if (key.slice(-4, -2) === "_n" && isValidFilterOperator(suffix)) {
+        // negated operators
+        operator = suffix;
+        return [APIFilterParam, [key.slice(0, -4), "n" + operator, formatFilterArguments(operator, value)].filter(v => !!v).join(",")];
+    }
+
+    return [APIFilterParam, `${key},eq,${value}`];
+});
 
 const formatFilterArguments = (operator: FilterOperator, value: any): string => {
     switch (operator) {
@@ -98,28 +119,24 @@ const formatFilterArguments = (operator: FilterOperator, value: any): string => 
         default:
             return value;
     }
+};
+
+interface IParams {
+    order: string;
+    page: string;
+    filter: Record<string, any>;
+    [key: string]: any;
 }
 
-/** see https://github.com/mevdschee/php-crud-api#filters */
-const filterOperators = [
-    "cs", // contain string (string contains value)
-    "sw", // start with (string starts with value)
-    "ew", // end with (string end with value)
-    "eq", // equal (string or number matches exactly)
-    "lt", // lower than (number is lower than value)
-    "le", // lower or equal (number is lower than or equal to value)
-    "ge", // greater or equal (number is higher than or equal to value)
-    "gt", // greater than (number is higher than value)
-    "bt", // between (number is between two comma separated values)
-    "in", // in (number or string is in comma separated list of values)
-    "is", // is null (field contains "NULL" value)
-] as const;
+export const formatParams = (rawParams?: IParams): string => {
+    if (!rawParams) { return ""; }
+    const { filter, ...rest } = rawParams;
 
-type FilterOperator = typeof filterOperators[number];
+    const urlParams = new URLSearchParams(rest);
+    formatFilter(filter).forEach(([key, value]) => urlParams.append(key, value));
 
-const isValidFilterOperator = (value: any): value is FilterOperator => filterOperators.includes(value);
-
-const formatParams = (rawParams?: Record<string, string>): string => decodeURIComponent(new URLSearchParams(rawParams).toString());
+    return "?" + decodeURIComponent(urlParams.toString());
+};
 
 export class TreeQLDataProvider<ResourceType extends string = string> implements DataProvider<ResourceType> {
 
@@ -135,7 +152,7 @@ export class TreeQLDataProvider<ResourceType extends string = string> implements
         const url = this.getURL(resource, {
             order: `${field},${order}`,
             page: `${page},${perPage}`,
-            filter: formatFilter(filter)
+            filter
         });
 
         const { json: { records, results } } = await this.httpClient(url);
@@ -163,10 +180,10 @@ export class TreeQLDataProvider<ResourceType extends string = string> implements
         const url = this.getURL(resource, {
             order: `${field},${order}`,
             page: `${page},${perPage}`,
-            filter: formatFilter({
+            filter: {
                 ...filter,
                 [target]: id
-            })
+            }
         });
 
         const { json: { records, results } } = await this.httpClient(url);
@@ -227,9 +244,8 @@ export class TreeQLDataProvider<ResourceType extends string = string> implements
         return ({ data: ids });
     }
 
-    protected getURL(resource: string, _params?: Record<string, string>) {
-        const params = (_params && Object.keys(_params).length > 0) ? `?${formatParams(_params)}` : "";
-        return `${this.apiUrl}/records/${resource}${params}`;
+    protected getURL(resource: string, params?: IParams) {
+        return `${this.apiUrl}/records/${resource}${formatParams(params)}`;
     }
 }
 

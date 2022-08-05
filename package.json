@@ -22,7 +22,8 @@
         "build": "tsup src/index.ts --silent --clean --format cjs,esm --minify --keep-names --metafile --sourcemap --dts --legacy-output --target es5",
         "watch": "tsup src/index.ts --silent --clean --format cjs,esm --minify --keep-names --metafile --sourcemap --dts --legacy-output --target es5 --watch",
         "test": "jest src/index.test.ts --coverage",
-        "test:watch": "jest src/index.test.ts --watch --coverage"
+        "test:watch": "jest src/index.test.ts --watch --coverage",
+        "prepack": "npm run build"
     },
     "dependencies": {
         "ra-core": "^4.1.2"

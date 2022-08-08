@@ -1,6 +1,6 @@
 # TreeQL Data Provider For React-Admin
 
-[![coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)](https://mevdschee.github.io/ra-data-treeql/coverage/lcov-report/)
+[![coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)](https://nkappler.github.io/ra-data-treeql/coverage/lcov-report/)
 [![npm](https://img.shields.io/npm/v/ra-data-treeql.svg)](https://www.npmjs.com/package/ra-data-treeql) [![types](https://img.shields.io/npm/types/ra-data-treeql.svg)](https://unpkg.com/browse/ra-data-treeql@1.1.0/dist/index.d.ts)
 
 TreeQL Data Provider for [react-admin](https://github.com/marmelab/react-admin), the frontend framework for building admin applications on top of REST/GraphQL services.

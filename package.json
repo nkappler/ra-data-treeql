@@ -1,6 +1,6 @@
 {
     "name": "ra-data-treeql",
-    "version": "1.1.2",
+    "version": "1.1.3",
     "description": "TreeQL data provider for react-admin",
     "main": "dist/index.js",
     "module": "dist/esm/index.js",

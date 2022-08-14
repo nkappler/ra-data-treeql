@@ -123,7 +123,7 @@ describe("dataProvider API", () => {
         });
     });
 
-    it("delete", async () => {
+    it("deleteMany", async () => {
         const result = await dataProvider.deleteMany("comment", { ids: [1, 2] });
 
         expect(mock).lastCalledWith(
@@ -331,7 +331,7 @@ describe("dataProvider API", () => {
         });
     });
 
-    it("update", async () => {
+    it("updateMany", async () => {
         mock.mockImplementationOnce(() => ({
             json: {
                 id: 1, title: "New Title", content: "This is a test comment"
@@ -368,4 +368,11 @@ describe("dataProvider API", () => {
         });
     });
 
+    it("update and delete should at least return { id } if no previousdata is supplied", async () => {
+        const updateResult = await dataProvider.update("comment", { id: 1, data: { title: "New Title" }, previousData: {} as any });
+        expect(updateResult).toEqual({ data: { id: 1, title: "New Title" } });
+
+        const deleteResult = await dataProvider.delete("comment", { id: 1 });
+        expect(deleteResult).toEqual({ data: { id: 1 } });
+    });
 });

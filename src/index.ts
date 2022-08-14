@@ -201,6 +201,7 @@ export class TreeQLDataProvider<ResourceType extends string = string> implements
         });
         return {
             data: {
+                id,
                 ...previousData,
                 ...data
             }
@@ -233,7 +234,12 @@ export class TreeQLDataProvider<ResourceType extends string = string> implements
         await this.httpClient(`${this.getURL(resource)}/${id}`, {
             method: 'DELETE',
         });
-        return ({ data: previousData });
+        return ({
+            data: {
+                id,
+                ...previousData
+            }
+        });
     }
 
     public async deleteMany<RecordType extends RaRecord = any>(resource: ResourceType, params: DeleteManyParams<RecordType>): Promise<DeleteManyResult<RecordType>> {

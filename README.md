@@ -21,7 +21,7 @@ This Data Provider fits REST APIs following the [TreeQL](https://treeql.org) spe
 | ------------------ | ----------------------------------------------------------------- |
 | `getList`          | `GET http://my.api.url/records/posts?order=title,ASC&page=1,25`   |
 | `getOne`           | `GET http://my.api.url/records/posts/123`                         |
-| `getMany`          | `GET http://my.api.url/records/posts?123,456,789`              |
+| `getMany`          | `GET http://my.api.url/records/posts?123,456,789`                 |
 | `getManyReference` | `GET http://my.api.url/records/posts?filter=author_id,eq,345`     |
 | `update`           | `PUT http://my.api.url/records/posts/123`                         |
 | `updateMany`       | `PUT http://my.api.url/records/posts/123,456,789`                 |
@@ -56,7 +56,7 @@ The following filter operators are supported. All operators except the search op
 |`cs`|contains string|
 |`sw`|starts with|
 |`ew`|ends with|
-|`eq`<br />&nbsp;|equal<br /><small><i>Default when no operator is provided</i></small>|
+|`eq`<br />&nbsp;|equal<br /><sub><i>Default when no operator is provided</i></sub>|
 |`lt`|less than|
 |`le`|less or equal|
 |`ge`|greater or equal|
@@ -66,7 +66,7 @@ The following filter operators are supported. All operators except the search op
 |`is`|is `null`|
 
 To use a filter operator, append it as a suffix to the `source` attribute for the field you want to apply the filter for:<br />
-<small><i>The search operator `q` isn't a suffix, use it as the `source` attribute</i></small>
+<sub><i>The search operator `q` isn't a suffix, use it as the `source` attribute</i></sub>
 
 ```jsx
 import { Datagrid, List, TextField, TextInput } from "react-admin";

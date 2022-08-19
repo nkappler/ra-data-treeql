@@ -47,6 +47,44 @@ const App = () => (
 
 export default App;
 ```
+### Filter Operators
+The following filter operators are supported. All operators except the search operator `q` can be negated by prepending `n` so for example `cs` becomes `ncs`.
+
+|Operator|Description|
+|-|-|
+|`q` |search all fields|
+|`cs`|contains string|
+|`sw`|starts with|
+|`ew`|ends with|
+|`eq`<br />&nbsp;|equal<br /><small><i>Default when no operator is provided</i></small>|
+|`lt`|less than|
+|`le`|less or equal|
+|`ge`|greater or equal|
+|`gt`|greater than|
+|`bt`|between|
+|`in`|in list|
+|`is`|is `null`|
+
+To use a filter operator, append it as a suffix to the `source` attribute for the field you want to apply the filter for:<br />
+<small><i>The search operator `q` isn't a suffix, use it as the `source` attribute</i></small>
+
+```jsx
+import { Datagrid, List, TextField, TextInput } from "react-admin";
+
+const filters = [
+    <TextInput label="Search" source="q" alwaysOn />,
+    <TextInput label="First Name" source="firstname_cs" />,
+];
+
+export const CustomerList = () => (
+    <List {...{ filters }}>
+        <Datagrid>
+            <TextField source="firstname" />
+            <TextField source="lastname" />
+        </Datagrid>
+    </List>
+);
+```
 
 ### Adding Custom Headers
 

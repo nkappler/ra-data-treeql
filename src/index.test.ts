@@ -11,7 +11,7 @@ const mockHTTP = {
 
 const formatFilter = (filter: Record<string, any>) => formatParams({ filter } as any);
 
-const dataProvider = new TestDataProvider("http://myApi.com/", (url, options) => mockHTTP.fetch(url, options));
+const dataProvider = new TestDataProvider("http://myApi.com/", (url, options) => mockHTTP.fetch(url, options) as any);
 
 const spyOn = jest.spyOn;
 
@@ -72,6 +72,16 @@ describe("formatFilter", () => {
 describe("getURL", () => {
     it("params should be encoded correctly", () => {
         const params = { order: "length,DESC", page: "1,25", filter: { id: 4 } };
+        expect(dataProvider.getURL("comment", params)).toEqual("http://myApi.com/records/comment?order=length,DESC&page=1,25&filter=id,eq,4");
+    });
+
+    it("additional params in 'meta' should be encoded correctly", () => {
+        const params = { order: "length,DESC", page: "1,25", filter: { id: 4 }, meta: {include : "name,description"} };
+        expect(dataProvider.getURL("comment", params)).toEqual("http://myApi.com/records/comment?order=length,DESC&page=1,25&filter=id,eq,4&include=name,description");
+    });
+
+    it("should not be able to overwrite crucial params with meta", () => {
+        const params = { order: "length,DESC", page: "1,25", filter: { id: 4 }, meta: { filter: "filter", page: "page", order: "order"} };
         expect(dataProvider.getURL("comment", params)).toEqual("http://myApi.com/records/comment?order=length,DESC&page=1,25&filter=id,eq,4");
     });
 });

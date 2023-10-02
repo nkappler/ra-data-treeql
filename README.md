@@ -21,7 +21,7 @@ This Data Provider fits REST APIs following the [TreeQL](https://treeql.org) spe
 | ------------------ | ----------------------------------------------------------------- |
 | `getList`          | `GET http://my.api.url/records/posts?order=title,ASC&page=1,25`   |
 | `getOne`           | `GET http://my.api.url/records/posts/123`                         |
-| `getMany`          | `GET http://my.api.url/records/posts?123,456,789`              |
+| `getMany`          | `GET http://my.api.url/records/posts?123,456,789`                 |
 | `getManyReference` | `GET http://my.api.url/records/posts?filter=author_id,eq,345`     |
 | `update`           | `PUT http://my.api.url/records/posts/123`                         |
 | `updateMany`       | `PUT http://my.api.url/records/posts/123,456,789`                 |
@@ -46,6 +46,44 @@ const App = () => (
 );
 
 export default App;
+```
+### Filter Operators
+The following filter operators are supported. All operators except the search operator `q` can be negated by prepending `n` so for example `cs` becomes `ncs`.
+
+|Operator|Description|
+|-|-|
+|`q` |search all fields|
+|`cs`|contains string|
+|`sw`|starts with|
+|`ew`|ends with|
+|`eq`<br />&nbsp;|equal<br /><sub><i>Default when no operator is provided</i></sub>|
+|`lt`|less than|
+|`le`|less or equal|
+|`ge`|greater or equal|
+|`gt`|greater than|
+|`bt`|between|
+|`in`|in list|
+|`is`|is `null`|
+
+To use a filter operator, append it as a suffix to the `source` attribute for the field you want to apply the filter for:<br />
+<sub><i>The search operator `q` isn't a suffix, use it as the `source` attribute</i></sub>
+
+```jsx
+import { Datagrid, List, TextField, TextInput } from "react-admin";
+
+const filters = [
+    <TextInput label="Search" source="q" alwaysOn />,
+    <TextInput label="First Name" source="firstname_cs" />,
+];
+
+export const CustomerList = () => (
+    <List {...{ filters }}>
+        <Datagrid>
+            <TextField source="firstname" />
+            <TextField source="lastname" />
+        </Datagrid>
+    </List>
+);
 ```
 
 ### Adding Custom Headers

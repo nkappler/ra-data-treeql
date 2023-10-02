@@ -14,6 +14,7 @@ import type {
     GetManyResult,
     GetOneParams,
     GetOneResult,
+    Identifier,
     RaRecord,
     UpdateManyParams,
     UpdateManyResult,
@@ -103,7 +104,7 @@ const formatFilter = (filter: Record<string, any>): [string, string][] => Object
     return [APIFilterParam, `${key},eq,${value}`];
 });
 
-const formatFilterArguments = (operator: FilterOperator, value: any): string => {
+const formatFilterArguments = (operator: FilterOperator, value: any): string | null => {
     switch (operator) {
         case "bt":
             if (!Array.isArray(value)) { throw new TypeError("Array expected as filter value for filter type \"between\" (bt)") }
@@ -122,20 +123,28 @@ const formatFilterArguments = (operator: FilterOperator, value: any): string => 
 };
 
 interface IParams {
-    order: string;
-    page: string;
-    filter: Record<string, any>;
+    order?: string;
+    page?: string;
+    filter?: Record<string, any>;
+    meta?: Record<string, any>;
+    id?: Identifier;
+    ids?: Identifier[];
     [key: string]: any;
 }
 
-export const formatParams = (rawParams?: IParams): string => {
-    if (!rawParams) { return ""; }
-    const { filter, ...rest } = rawParams;
+export const formatParams = (params: IParams): string => {
+    const { filter, meta, ...rest } = params;
 
     const urlParams = new URLSearchParams(rest);
-    formatFilter(filter).forEach(([key, value]) => urlParams.append(key, value));
+    filter && formatFilter(filter).forEach(([key, value]) => urlParams.append(key, value));
 
-    return "?" + decodeURIComponent(urlParams.toString());
+    Object.entries(meta ?? {})
+        .filter(([key]) => !["order", "page", "filter"].includes(key))
+        .forEach(([key, value]) => urlParams.append(key, value));
+
+    const urlParamsString = urlParams.toString();
+
+    return !urlParamsString ? "" : "?" + decodeURIComponent(urlParamsString);
 };
 
 export class TreeQLDataProvider<ResourceType extends string = string> implements DataProvider<ResourceType> {
@@ -146,13 +155,14 @@ export class TreeQLDataProvider<ResourceType extends string = string> implements
     }
 
     public async getList<RecordType extends RaRecord = any>(resource: ResourceType, params: GetListParams): Promise<GetListResult<RecordType>> {
-        const { sort, pagination, filter } = params;
+        const { sort, pagination, filter, meta } = params;
         const { page, perPage } = pagination;
         const { field, order } = sort;
         const url = this.getURL(resource, {
             order: `${field},${order}`,
             page: `${page},${perPage}`,
-            filter
+            filter,
+            meta
         });
 
         const { json: { records, results } } = await this.httpClient(url);
@@ -163,18 +173,19 @@ export class TreeQLDataProvider<ResourceType extends string = string> implements
     }
 
     public async getOne<RecordType extends RaRecord = any>(resource: ResourceType, params: GetOneParams<RecordType>): Promise<GetOneResult<RecordType>> {
-        const { json } = await this.httpClient(`${this.getURL(resource)}/${params.id}`);
+        const { id, meta } = params;
+        const { json } = await this.httpClient(this.getURL(resource, { id, meta }));
         return ({ data: json });
     }
 
     public async getMany<RecordType extends RaRecord = any>(resource: ResourceType, params: GetManyParams): Promise<GetManyResult<RecordType>> {
-        const url = `${this.getURL(resource)}/${params.ids.join(',')}`;
-        const { json } = await this.httpClient(url);
+        const { ids, meta } = params;
+        const { json } = await this.httpClient(this.getURL(resource, { ids, meta }));
         return ({ data: Array.isArray(json) ? json : [json] });
     }
 
     public async getManyReference<RecordType extends RaRecord = any>(resource: ResourceType, params: GetManyReferenceParams): Promise<GetManyReferenceResult<RecordType>> {
-        const { id, target, sort, pagination, filter } = params;
+        const { id, target, sort, pagination, filter, meta } = params;
         const { page, perPage } = pagination;
         const { field, order } = sort;
         const url = this.getURL(resource, {
@@ -183,7 +194,8 @@ export class TreeQLDataProvider<ResourceType extends string = string> implements
             filter: {
                 ...filter,
                 [target]: id
-            }
+            },
+            meta
         });
 
         const { json: { records, results } } = await this.httpClient(url);
@@ -194,23 +206,24 @@ export class TreeQLDataProvider<ResourceType extends string = string> implements
     }
 
     public async update<RecordType extends RaRecord = any>(resource: ResourceType, params: UpdateParams<RecordType>): Promise<UpdateResult<RecordType>> {
-        const { id, data, previousData } = params
-        await this.httpClient(`${this.getURL(resource)}/${id}`, {
+        const { id, data, previousData, meta } = params
+        await this.httpClient(this.getURL(resource, { id, meta }), {
             method: 'PUT',
             body: JSON.stringify(data),
         });
         return {
             data: {
+                //@ts-ignore
                 id,
                 ...previousData,
-                ...data
+                ...data,
             }
         };
     }
 
-    public async updateMany<RecordType extends RaRecord = any>(resource: ResourceType, params: UpdateManyParams): Promise<UpdateManyResult<RecordType>> {
-        const { ids, data } = params;
-        await this.httpClient(`${this.getURL(resource)}/${ids.join(',')}`, {
+    public async updateMany<RecordType extends RaRecord = any>(resource: ResourceType, params: UpdateManyParams<RecordType>): Promise<UpdateManyResult<RecordType>> {
+        const { ids, data, meta } = params;
+        await this.httpClient(this.getURL(resource, { ids, meta }), {
             method: 'PUT',
             body: JSON.stringify(data),
         });
@@ -218,40 +231,42 @@ export class TreeQLDataProvider<ResourceType extends string = string> implements
         return { data: ids };
     }
 
-    public async create<RecordType extends RaRecord = any>(resource: ResourceType, params: CreateParams): Promise<CreateResult<RecordType>> {
-        const { data } = params;
-        const { json } = await this.httpClient(`${this.getURL(resource)}`, {
+    public async create<RecordType extends RaRecord = any>(resource: ResourceType, params: CreateParams<RecordType>): Promise<CreateResult<RecordType>> {
+        const { data, meta } = params;
+        const { json } = await this.httpClient(this.getURL(resource, { meta }), {
             method: 'POST',
             body: JSON.stringify(data),
         });
         return ({
-            data: { ...data, id: json },
+            data: { ...data, id: json } as RecordType,
         });
     }
 
     public async delete<RecordType extends RaRecord = any>(resource: ResourceType, params: DeleteParams<RecordType>): Promise<DeleteResult<RecordType>> {
-        const { id, previousData } = params
-        await this.httpClient(`${this.getURL(resource)}/${id}`, {
+        const { id, previousData, meta } = params
+        await this.httpClient(this.getURL(resource, { id, meta }), {
             method: 'DELETE',
         });
         return ({
             data: {
                 id,
                 ...previousData
-            }
+            } as RecordType
         });
     }
 
     public async deleteMany<RecordType extends RaRecord = any>(resource: ResourceType, params: DeleteManyParams<RecordType>): Promise<DeleteManyResult<RecordType>> {
-        const { ids } = params;
-        await this.httpClient(`${this.getURL(resource)}/${ids.join(',')}`, {
+        const { ids, meta } = params;
+        await this.httpClient(this.getURL(resource, { ids, meta }), {
             method: 'DELETE',
         });
         return ({ data: ids });
     }
 
-    protected getURL(resource: string, params?: IParams) {
-        return `${this.apiUrl}/records/${resource}${formatParams(params)}`;
+    protected getURL(resource: string, params: IParams) {
+        const { id, ids, ...rest } = params;
+        const record = id ? `/${id}` : ids ? `/${ids.join(",")}` : "";
+        return `${this.apiUrl}/records/${resource}${record}${formatParams(rest)}`;
     }
 }
 

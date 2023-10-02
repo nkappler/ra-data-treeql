@@ -1,3 +1,4 @@
+import { RaRecord } from "ra-core";
 import getDataProvider, { formatParams, TreeQLDataProvider } from ".";
 
 class TestDataProvider extends TreeQLDataProvider {
@@ -302,7 +303,7 @@ describe("dataProvider API", () => {
             }
         }));
 
-        const result = await dataProvider.update("comment", {
+        const result = await dataProvider.update<RaRecord>("comment", {
             id: "1",
             data: {
                 title: "New Title"

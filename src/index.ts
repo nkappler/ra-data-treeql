@@ -14,6 +14,7 @@ import type {
     GetManyResult,
     GetOneParams,
     GetOneResult,
+    Identifier,
     RaRecord,
     UpdateManyParams,
     UpdateManyResult,
@@ -208,7 +209,7 @@ export class TreeQLDataProvider<ResourceType extends string = string> implements
         };
     }
 
-    public async updateMany<RecordType extends RaRecord = any>(resource: ResourceType, params: UpdateManyParams): Promise<UpdateManyResult<RecordType>> {
+    public async updateMany<RecordType extends RaRecord = any>(resource: ResourceType, params: UpdateManyParams<RecordType>): Promise<UpdateManyResult<RecordType>> {
         const { ids, data } = params;
         await this.httpClient(`${this.getURL(resource)}/${ids.join(',')}`, {
             method: 'PUT',
@@ -218,14 +219,14 @@ export class TreeQLDataProvider<ResourceType extends string = string> implements
         return { data: ids };
     }
 
-    public async create<RecordType extends RaRecord = any>(resource: ResourceType, params: CreateParams): Promise<CreateResult<RecordType>> {
+    public async create<RecordType extends RaRecord = any>(resource: ResourceType, params: CreateParams<RecordType>): Promise<CreateResult<RecordType>> {
         const { data } = params;
         const { json } = await this.httpClient(`${this.getURL(resource)}`, {
             method: 'POST',
             body: JSON.stringify(data),
         });
         return ({
-            data: { ...data, id: json },
+            data: { ...data, id: json } as RecordType,
         });
     }
 
